@@ -1,0 +1,9 @@
+[Unit]
+Description=Palworld Dedicated Server
+
+[Service]
+ExecStart=/srv/palworld/start.sh server
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
