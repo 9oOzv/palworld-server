@@ -1,0 +1,9 @@
+[Unit]
+Description=Palworld Dedicated Server Monitor
+
+[Service]
+ExecStart=/srv/palworld/monitor.sh
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
