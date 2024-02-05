@@ -1,0 +1,42 @@
+@font-face {
+  font-family: 'Hack';
+  src: url('/font/hack.ttf');
+}
+
+* {
+    font-family: 'Hack';
+    font-size 14px;
+    margin: 0;
+    padding: 0;
+    background-color: black;
+    color: rgb(150,150,150);
+}
+
+h1 {
+    color: rgb(255,0,100);
+    text-align: center;
+    margin-top: 20px;
+    font-size: 22px;
+    padding-top: 48px;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px auto;
+    width: 400px;
+    background-color: black);
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+ul li {
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-align: center;
+}
+
+li:hover {
+    background-color: #f0f0f0;
+}

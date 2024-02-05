@@ -1,0 +1,73 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Control Panel</title>
+    <style>
+    </style>
+</head>
+<body>
+    <h1>Operations</h1>
+    <ul id="operations"></ul>
+
+    <h1>Rollback</h1>
+    <ul id="directories"></ul>
+
+    <script>
+        async function fetchOperations() {
+            const operationsList = document.getElementById('operations');
+            const listItem = document.createElement('li');
+            listItem.textContent = "Restart server";
+            listItem.addEventListener('click', () => {
+            	  const confirmed = confirm(`Are you sure you want to: ${listItem.textContent}?`);
+                if(confirmed) {
+                    restart();
+                }
+            });
+            operationsList.appendChild(listItem);
+        }
+
+        async function fetchBackups() {
+            const response = await fetch('.//backups');
+            const directories = await response.json();
+            const directoriesList = document.getElementById('directories');
+            directories.forEach(directory => {
+                const listItem = document.createElement('li');
+                listItem.textContent = directory;
+                listItem.addEventListener('click', () => {
+            	      const confirmed = confirm(`Are you sure you want to rollback: ${listItem.textContent}?`);
+	                  if(confirmed) {
+                      executeScript(directory);
+                    }
+                });
+                directoriesList.appendChild(listItem);
+            });
+        }
+
+        async function restart(selectedFolder) {
+            const response = await fetch('./restart', { method: 'POST' });
+            const message = await response.text();
+            alert(message);
+        }
+
+        async function rollback(selectedFolder) {
+            const response = await fetch('./rollback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ selectedFolder })
+            });
+            const message = await response.text();
+            alert(message);
+        }
+
+	fetchOperations();
+        fetchBackups();
+    </script>
+</body>
+</html>
+
