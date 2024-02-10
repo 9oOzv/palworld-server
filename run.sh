@@ -34,7 +34,7 @@ all_services=(
     "$palsrv_monitor_service"
 )
 
-systemd_unit_folder="$HOME/.config/systemd"
+systemd_unit_folder="$HOME/.config/systemd/user"
 
 palsrv_stop() {
     printf 'Stopping service `%s`...\n' "$palsrv_service"
