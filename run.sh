@@ -27,21 +27,32 @@ palsrv_monitor_service='palsrv-monitor'
 palsrv_controlpanel_service='palsrv-controlpanel'
 palsrv_services_folder="$palsrv_base_folder/services"
 
+all_services=(
+    "$palsrv_service"
+    "$palsrv_controlpanel_service"
+    "$palsrv_backup_service"
+    "$palsrv_monitor_service"
+)
+
 systemd_unit_folder="$HOME/.config/systemd"
 
 palsrv_stop() {
+    printf 'Stopping service `%s`...' "$palsrv_service"
     systemctl --user stop "$palsrv_service"
 }
 
 palsrv_start() {
+    printf 'Starting service `%s`...' "$palsrv_service"
     systemctl --user start "$palsrv_service"
 }
 
 palsrv_restart() {
+    printf 'Restarting service `%s`...' "$palsrv_service"
     systemctl --user restart "$palsrv_service"
 }
 
 palsrv_steam_update() {
+    printf 'Updating steam apps...'
     systemctl --user restart "$palsrv_service"
     cd "$steamcmd_folder"
     "$steamcmd_sh" +login anonymous +app_update "$steamworks_sdk_steamapp_id" +quit
@@ -49,6 +60,7 @@ palsrv_steam_update() {
 }
 
 palsrv_server() {
+    printf 'Running PalServer...'
     cd "$palsrv_steamapp_sh"
     "$palsrv_sh" --port 8211 --players 32 -useperfthreads -NoAsyncLoadingThread -UseMultithreadForDS
 }
@@ -64,6 +76,7 @@ install_palserver() {
 }
 
 palsrv_backup() {
+    printf 'Running palsrv-backup...'
     cd "$palsrv_base_folder"
     if [ ! -d "$palsrv_backup_venv" ]; then
         /usr/bin/env python3 -m venv "$palsrv_backup_venv"
@@ -75,6 +88,7 @@ palsrv_backup() {
 
 palsrv_restore() {
     src="$(readlink -f "$1")"
+    printf 'Restoring backup `%s`...' "$src"
     backups_folder="$(readlink -f "$palsrv_backup_folder")"
     target="$(readlink -f "$palsrv_saved_folder")"
     if [[ ! "$src" == "$backups_folder"* ]]; then
@@ -89,37 +103,50 @@ palsrv_restore() {
 }
 
 palsrv_controlpanel() {
+    printf 'Running palsrv-controlpanel...'
     cd "$palsrv_controlpanel_folder"
     npm install
     node index.js
 }
 
 try_stop_all() {
-    systemctl --user stop "$palsrv_service" "$palsrv_controlpanel_service" "$palsrv_backup_service" "$palsrv_monitor_service" || true
+    printf 'Stopping services:'
+    printf ' %s' "${all_services[@]}"
+    systemctl --user stop  || true
 }
 
 start_all() {
+    printf 'Starting services:'
+    printf ' %s' "${all_services[@]}"
     systemctl --user start "$palsrv_service" "$palsrv_controlpanel_service" "$palsrv_backup_service" "$palsrv_monitor_service"
 }
 
-copy_services() {
+install_services() {
+    printf 'Copying systemd service files `%s` -> `%s`' "$palsrv_services_folder" "$systemd_unit_folder"
     mkdir -p "$systemd_unit_folder"
     cp "$palsrv_services_folder/"*.service "$systemd_unit_folder"
+    printf 'Reloading systemd daemon'
+    systemctl --user reload-daemon
 }
 
 palsrv_deploy() {
+    printf 'Deploying the palsrv components...'
     try_stop_all
     install_steamcmd
     install_palserver
-    copy_services
+    install_services
     start_all
 }
 
 palsrv_update() {
+    printf 'Updating PalServer...'
     palsrv_stop
     palsrv_steam_update
     palsrv_start
 }
+
+
+printf 'Running palsrv `run.sh`'
 
 case "$1" in
     server)
