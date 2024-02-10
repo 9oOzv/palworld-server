@@ -37,22 +37,22 @@ all_services=(
 systemd_unit_folder="$HOME/.config/systemd"
 
 palsrv_stop() {
-    printf 'Stopping service `%s`...' "$palsrv_service"
+    printf 'Stopping service `%s`...\n' "$palsrv_service"
     systemctl --user stop "$palsrv_service"
 }
 
 palsrv_start() {
-    printf 'Starting service `%s`...' "$palsrv_service"
+    printf 'Starting service `%s`...\n' "$palsrv_service"
     systemctl --user start "$palsrv_service"
 }
 
 palsrv_restart() {
-    printf 'Restarting service `%s`...' "$palsrv_service"
+    printf 'Restarting service `%s`...\n' "$palsrv_service"
     systemctl --user restart "$palsrv_service"
 }
 
 palsrv_steam_update() {
-    printf 'Updating steam apps...'
+    printf 'Updating steam apps...\n'
     systemctl --user restart "$palsrv_service"
     cd "$steamcmd_folder"
     "$steamcmd_sh" +login anonymous +app_update "$steamworks_sdk_steamapp_id" +quit
@@ -60,7 +60,7 @@ palsrv_steam_update() {
 }
 
 palsrv_server() {
-    printf 'Running PalServer...'
+    printf 'Running PalServer...\n'
     cd "$palsrv_steamapp_sh"
     "$palsrv_sh" --port 8211 --players 32 -useperfthreads -NoAsyncLoadingThread -UseMultithreadForDS
 }
@@ -76,7 +76,7 @@ install_palserver() {
 }
 
 palsrv_backup() {
-    printf 'Running palsrv-backup...'
+    printf 'Running palsrv-backup...\n'
     cd "$palsrv_base_folder"
     if [ ! -d "$palsrv_backup_venv" ]; then
         /usr/bin/env python3 -m venv "$palsrv_backup_venv"
@@ -88,11 +88,11 @@ palsrv_backup() {
 
 palsrv_restore() {
     src="$(readlink -f "$1")"
-    printf 'Restoring backup `%s`...' "$src"
+    printf 'Restoring backup `%s`...\n' "$src"
     backups_folder="$(readlink -f "$palsrv_backup_folder")"
     target="$(readlink -f "$palsrv_saved_folder")"
     if [[ ! "$src" == "$backups_folder"* ]]; then
-        printf '`%s` is not a subfolder of `%s`' "$src" "$backups_folder"
+        printf '`%s` is not a subfolder of `%s`\n' "$src" "$backups_folder"
         exit 1
     fi
     systemctl --user stop palsrv
@@ -103,34 +103,36 @@ palsrv_restore() {
 }
 
 palsrv_controlpanel() {
-    printf 'Running palsrv-controlpanel...'
+    printf 'Running palsrv-controlpanel...\n'
     cd "$palsrv_controlpanel_folder"
     npm install
     node index.js
 }
 
 try_stop_all() {
-    printf 'Stopping services:'
+    printf 'Stopping services:\n'
     printf ' %s' "${all_services[@]}"
-    systemctl --user stop  || true
+    printf '\n'
+    systemctl --user stop "${all_services[@]}" || true
 }
 
 start_all() {
-    printf 'Starting services:'
+    printf 'Starting services:\n'
     printf ' %s' "${all_services[@]}"
-    systemctl --user start "$palsrv_service" "$palsrv_controlpanel_service" "$palsrv_backup_service" "$palsrv_monitor_service"
+    printf '\n'
+    systemctl --user start "${all_services[@]}"
 }
 
 install_services() {
-    printf 'Copying systemd service files `%s` -> `%s`' "$palsrv_services_folder" "$systemd_unit_folder"
+    printf 'Copying systemd service files `%s` -> `%s`\n' "$palsrv_services_folder" "$systemd_unit_folder"
     mkdir -p "$systemd_unit_folder"
     cp "$palsrv_services_folder/"*.service "$systemd_unit_folder"
-    printf 'Reloading systemd daemon'
-    systemctl --user reload-daemon
+    printf 'Reloading systemd daemon\n'
+    systemctl --user daemon-reload
 }
 
 palsrv_deploy() {
-    printf 'Deploying the palsrv components...'
+    printf 'Deploying the palsrv components...\n'
     try_stop_all
     install_steamcmd
     install_palserver
@@ -139,14 +141,14 @@ palsrv_deploy() {
 }
 
 palsrv_update() {
-    printf 'Updating PalServer...'
+    printf 'Updating PalServer...\n'
     palsrv_stop
     palsrv_steam_update
     palsrv_start
 }
 
 
-printf 'Running palsrv `run.sh`'
+printf 'Running palsrv `run.sh`\n'
 
 case "$1" in
     server)
