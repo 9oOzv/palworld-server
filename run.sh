@@ -5,7 +5,7 @@ set -euo pipefail
 palsrv_steamapp_id="2394010"
 steamworks_sdk_steamapp_id="1007"
 
-palsrv_base_folder='/srv/palworld'
+palsrv_base_folder='/srv/palworld/palsrv'
 steamcmd_folder="$palsrv_base_folder/steam"
 palsrv_steamapp_folder="$steamcmd_folder/steamapps/common/PalServer"
 palsrv_saved_folder="$palsrv_steamapp_folder/Pal/Saved"
