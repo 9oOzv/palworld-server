@@ -18,20 +18,27 @@
 
     <script>
         async function fetchOperations() {
+            const operations = [
+                { name: "Restart server", f: restart },
+                { name: "Update server", f: update }
+            ]
             const operationsList = document.getElementById('operations');
-            const listItem = document.createElement('li');
-            listItem.textContent = "Restart server";
-            listItem.addEventListener('click', () => {
-            	  const confirmed = confirm(`Are you sure you want to: ${listItem.textContent}?`);
-                if(confirmed) {
-                    restart();
-                }
-            });
-            operationsList.appendChild(listItem);
+            const restartItem = document.createElement('li');
+            for(const o of operations) {
+                const listItem = document.createElement('li');
+                listItem.textContent = o.name;
+                listItem.addEventListener('click', () => {
+                    const confirmed = confirm(`Are you sure you want to: ${listItem.textContent}?`);
+                    if(confirmed) {
+                        o.f();
+                    }
+                });
+                operationsList.appendChild(listItem);
+            }
         }
 
         async function fetchBackups() {
-            const response = await fetch('.//backups');
+            const response = await fetch('./backups');
             const directories = await response.json();
             const directoriesList = document.getElementById('directories');
             directories.forEach(directory => {
@@ -39,15 +46,21 @@
                 listItem.textContent = directory;
                 listItem.addEventListener('click', () => {
             	      const confirmed = confirm(`Are you sure you want to rollback: ${listItem.textContent}?`);
-	                  if(confirmed) {
-                      executeScript(directory);
+	                if(confirmed) {
+                        rollback(directory);
                     }
                 });
                 directoriesList.appendChild(listItem);
             });
         }
 
-        async function restart(selectedFolder) {
+        async function update() {
+            const response = await fetch('./update', { method: 'POST' });
+            const message = await response.text();
+            alert(message);
+        }
+
+        async function restart() {
             const response = await fetch('./restart', { method: 'POST' });
             const message = await response.text();
             alert(message);
@@ -59,7 +72,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ selectedFolder })
+                body: JSON.stringify({ backup: selectedFolder })
             });
             const message = await response.text();
             alert(message);

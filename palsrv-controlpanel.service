@@ -2,7 +2,7 @@
 Description=Palworld Dedicated Server Node Web App
 
 [Service]
-ExecStart=/srv/palworld/controlpanel.sh
+ExecStart=/srv/palworld/run.sh controlpanel
 Restart=on-failure
 
 [Install]

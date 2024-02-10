@@ -2,7 +2,7 @@
 Description=Palworld Dedicated Server
 
 [Service]
-ExecStart=/srv/palworld/start.sh server
+ExecStart=/srv/palworld/run.sh server
 Restart=on-failure
 
 [Install]

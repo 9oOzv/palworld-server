@@ -2,7 +2,7 @@
 Description=Palworld Dedicated Server Monitor
 
 [Service]
-ExecStart=/srv/palworld/monitor.sh
+ExecStart=/srv/palworld/run.sh monitor
 Restart=on-failure
 
 [Install]

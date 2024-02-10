@@ -2,7 +2,7 @@
 Description=Palworld Dedicated Server Backup Service
 
 [Service]
-ExecStart=/srv/palworld/start.sh backup
+ExecStart=/srv/palworld/run.sh backup
 Restart=on-failure
 
 [Install]

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
 import shutil
-import os
 import datetime
-from pathlib import Path
+import pathlib
 import threading
 import time
 import json
+import fire
 
 terminate = False
 
-def perform_backup(source_dir: Path, backup_dir: Path):
+def perform_backup(source_dir: pathlib.Path, backup_dir: pathlib.Path):
     backup_dir.mkdir(parents=True, exist_ok=True)
     now = datetime.datetime.now()
     backup_folder = backup_dir /  now.strftime("backup_%Y-%m-%d_%H-%M-%S")
@@ -20,7 +20,7 @@ def perform_backup(source_dir: Path, backup_dir: Path):
         "backup_folder": str(backup_folder)
     }))
 
-def manage_retention(backup_dir: Path, retention: datetime.timedelta):
+def manage_retention(backup_dir: pathlib.Path, retention: datetime.timedelta):
     now = datetime.datetime.now()
     for backup_folder in backup_dir.iterdir():
         if backup_folder.is_dir():
@@ -32,7 +32,12 @@ def manage_retention(backup_dir: Path, retention: datetime.timedelta):
                     "backup_folder": str(backup_folder)
                 }))
 
-def run(source_dir: Path, backup_dir: Path, interval: datetime.timedelta, retention: datetime.timedelta, description: str):
+def run(source_dir: pathlib.Path,
+        backup_dir: pathlib.Path,
+        interval: datetime.timedelta,
+        retention: datetime.timedelta,
+        description: str):
+    global terminate
     next_backup = datetime.datetime.min
     while not terminate:
         now = datetime.datetime.now()
@@ -46,20 +51,22 @@ def run(source_dir: Path, backup_dir: Path, interval: datetime.timedelta, retent
             perform_backup(source_dir, backup_dir)
             manage_retention(backup_dir, retention)
             next_backup = now + interval
-        time.sleep(60)
+        time.sleep(30)
 
-if __name__ == "__main__":
-    source_dir = Path(os.environ["PALSRV_SAVED_DIR"])
-    backup_dir = Path(os.environ["PALSRV_BACKUP_DIR"])
-    minute = datetime.timedelta(seconds=60)
-    hour = 60 * minute
-    day = 24 * hour
-    week = 7 * day
-    year = 365 * day
-    quarterly = threading.Thread(target=run, args=(source_dir, backup_dir / '15min', 15 * minute, 8 * hour, "15min backup"))
-    hourly = threading.Thread(target=run, args=(source_dir, backup_dir / 'hourly', hour, 14 * day, "hourly backup"))
-    daily = threading.Thread(target=run, args=(source_dir, backup_dir / 'daily', day, 4 * week, "daily backup"))
-    weekly = threading.Thread(target=run, args=(source_dir, backup_dir / 'weekly', week, year, "weekly backup"))
+minute = datetime.timedelta(seconds=60)
+hour = 60 * minute
+day = 24 * hour
+week = 7 * day
+year = 365 * day
+
+def main(source: str, target: str):
+    global terminate
+    source = pathlib.Path(source)
+    target = pathlib.Path(target)
+    quarterly = threading.Thread(target=run, args=(source, target / '15min', 15 * minute, 8 * hour, "15min backup"))
+    hourly = threading.Thread(target=run, args=(source, target / 'hourly', hour, 14 * day, "hourly backup"))
+    daily = threading.Thread(target=run, args=(source, target / 'daily', day, 4 * week, "daily backup"))
+    weekly = threading.Thread(target=run, args=(source, target / 'weekly', week, year, "weekly backup"))
     quarterly.start()
     hourly.start()
     daily.start()
@@ -69,5 +76,8 @@ if __name__ == "__main__":
         daily.join()
         weekly.join()
     except KeyboardInterrupt:
-        print(json.dumps({"msg": "Backup stopped by the user"}))
+        print(json.dumps({"msg": "Backup stopped by the user. Stopping within 30 seconds..."}))
         terminate = True
+
+if __name__ == "__main__":
+    fire.Fire(main)

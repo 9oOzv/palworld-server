@@ -29,11 +29,15 @@ function listBackups(folder) {
 }
 
 function rollback(backup) {
-    executeScript(`/srv/palworld/restore.sh "${backupFolder}/${backup}/./"`);
+    executeScript(`/srv/palworld/run.sh restore "${backupFolder}/${backup}/./"`);
 }
 
 function restart() {
-    executeScript(`/srv/palworld/restart.sh`);
+    executeScript(`/srv/palworld/run.sh restart`);
+}
+
+function update() {
+    executeScript(`/srv/palworld/run.sh update`);
 }
 
 function executeScript(command) {
@@ -68,7 +72,7 @@ app.get('/backups', (req, res) => {
 app.post('/rollback', (req, res) => {
     const backup = req.body.backup;
     if (!validateBackupString(backup)) {
-        return res.status(400).send('Invalid request');
+        return res.status(400).send(`Invalid backup string: ${backup}`);
     }
     if (!backup) {
         return res.status(400).send('No folder selected');
@@ -80,6 +84,11 @@ app.post('/rollback', (req, res) => {
 app.post('/restart', (req, res) => {
     restart();
     res.send('Restart complete');
+});
+
+app.post('/update', (req, res) => {
+    update();
+    res.send('Update complete');
 });
 
 app.listen(PORT, () => {
