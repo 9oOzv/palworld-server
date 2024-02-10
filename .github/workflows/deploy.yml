@@ -13,8 +13,9 @@ jobs:
     steps:
       - name: Deploy
         run: |
+          set -euo pipefail
           mkdir -p ~/.ssh/
-          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+          ssh-keyscan -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
           printf '%s' ${{ secrets.DEPLOY_KEY }} >/tmp/key
           ssh -i /tmp/key -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "cd ~/palsrv && git fetch && git reset --hard origin/master && ./run deploy"
         env:
