@@ -24,7 +24,7 @@ ul {
     list-style-type: none;
     padding: 0;
     margin: 20px auto;
-    width: 400px;
+    width: 800;
     background-color: black);
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -39,4 +39,8 @@ ul li {
 
 li:hover {
     background-color: #f0f0f0;
+}
+
+.number {
+    color: rgb(0, 128, 255);
 }

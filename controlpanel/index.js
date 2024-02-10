@@ -1,31 +1,66 @@
-// app.js
+#!/usr/bin/env node
+
 const express = require('express');
 const fs = require('fs');
 const { exec } = require('child_process');
 const path = require('path');
-
 const app = express();
-const PORT = process.env.PORT || 3000;
 const backupFolder = '/srv/palworld/backup';
+const yargs = require('yargs/yargs')
 
-function listBackups(folder) {
-    const subfolders = [];
-    const immediateSubfolders = fs.readdirSync(folder, { withFileTypes: true })
-        .filter(item => item.isDirectory())
-	.sort((a, b) => {
-            const order = ['15min', 'hourly', 'daily', 'weekly'];
-            return order.indexOf(a.name) - order.indexOf(b.name);
-        })
-        .map(item => path.join(folder, item.name));
-    for (const subfolder of immediateSubfolders) {
-        const subSubfolders = fs.readdirSync(subfolder, { withFileTypes: true })
-            .filter(item => item.isDirectory())
-            .sort()
-            .reverse()
-            .map(item => path.join(subfolder, item.name));
-        subfolders.push(...subSubfolders.map(subSubfolder => path.relative(folder, subSubfolder)));
+argv = yargs(process.argv.slice(2))
+    .option('backups-folder', {
+        alias: 'b',
+        type: 'string',
+        description: 'path to the backup storage',
+        default: './backups'
+    })
+    .option('port', {
+        alias: 'p',
+        type: 'string',
+        description: 'port to bind on',
+        default: '3000'
+    })
+    .parse()
+
+function findBackupsAndSizes(folderPath) {
+    let subfolderInfo = [];
+    function traverseDirectory(currentPath) {
+        const files = fs.readdirSync(currentPath);
+        files.forEach(file => {
+            const filePath = path.join(currentPath, file);
+            const relativePath = path.relative(folderPath, filePath);
+            const stats = fs.statSync(filePath);
+            if (stats.isDirectory()) {
+                const dateRegex = /\d{4}-\d{2}-\d{2}/;
+                if (dateRegex.test(file)) {
+                    const subfolderSize = getFolderSize(filePath);
+                    subfolderInfo.push({
+                        path: relativePath,
+                        size: subfolderSize
+                    });
+                }
+                traverseDirectory(filePath);
+            }
+        });
     }
-    return subfolders;
+    traverseDirectory(folderPath);
+    return subfolderInfo;
+}
+
+function getFolderSize(folderPath) {
+    let totalSize = 0;
+    const files = fs.readdirSync(folderPath);
+    files.forEach(file => {
+        const filePath = path.join(folderPath, file);
+        const stats = fs.statSync(filePath);
+        if (stats.isFile()) {
+            totalSize += stats.size;
+        } else if (stats.isDirectory()) {
+            totalSize += getFolderSize(filePath);
+        }
+    });
+    return totalSize;
 }
 
 function rollback(backup) {
@@ -65,7 +100,7 @@ app.use(express.static('public'));
 app.use(express.json());
 
 app.get('/backups', (req, res) => {
-    const backups = listBackups(backupFolder);
+    const backups = findBackupsAndSizes(argv.backupsFolder);
     res.json(backups);
 });
 
@@ -91,7 +126,6 @@ app.post('/update', (req, res) => {
     res.send('Update complete');
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+app.listen(argv.port, () => {
+    console.log(`Server is running on port ${argv.port}`);
 });
-

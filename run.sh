@@ -106,7 +106,7 @@ palsrv_controlpanel() {
     printf 'Running palsrv-controlpanel...\n'
     cd "$palsrv_controlpanel_folder"
     npm install
-    node index.js
+    node index.js -b "$palsrv_backup_folder"
 }
 
 try_stop_all() {
