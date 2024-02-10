@@ -5,7 +5,6 @@ const fs = require('fs');
 const { exec } = require('child_process');
 const path = require('path');
 const app = express();
-const backupFolder = '/srv/palworld/backup';
 const yargs = require('yargs/yargs')
 
 argv = yargs(process.argv.slice(2))
@@ -14,6 +13,12 @@ argv = yargs(process.argv.slice(2))
         type: 'string',
         description: 'path to the backup storage',
         default: './backups'
+    })
+    .option('run-sh', {
+        alias: 'r',
+        type: 'string',
+        description: '`run.sh` location',
+        default: './run.sh'
     })
     .option('port', {
         alias: 'p',
@@ -64,15 +69,15 @@ function getFolderSize(folderPath) {
 }
 
 function rollback(backup) {
-    executeScript(`/srv/palworld/run.sh restore "${backupFolder}/${backup}/./"`);
+    executeScript(`${argv.runSh} restore "${argv.backupsFolder}/${backup}/./"`);
 }
 
 function restart() {
-    executeScript(`/srv/palworld/run.sh restart`);
+    executeScript(`${argv.runSh} restart`);
 }
 
 function update() {
-    executeScript(`/srv/palworld/run.sh update`);
+    executeScript(`${argv.runSh} update`);
 }
 
 function executeScript(command) {

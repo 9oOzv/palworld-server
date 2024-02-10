@@ -6,6 +6,8 @@ palsrv_steamapp_id="2394010"
 steamworks_sdk_steamapp_id="1007"
 
 palsrv_base_folder='/srv/palworld/palsrv'
+run_sh="$palsrv_base_folder/run.sh"
+
 steamcmd_folder="$palsrv_base_folder/steam"
 palsrv_steamapp_folder="$steamcmd_folder/steamapps/common/PalServer"
 palsrv_saved_folder="$palsrv_steamapp_folder/Pal/Saved"
@@ -106,7 +108,7 @@ palsrv_controlpanel() {
     printf 'Running palsrv-controlpanel...\n'
     cd "$palsrv_controlpanel_folder"
     npm install
-    node index.js -b "$palsrv_backup_folder"
+    node index.js -b "$palsrv_backup_folder" -r "$run_sh"
 }
 
 try_stop_all() {
