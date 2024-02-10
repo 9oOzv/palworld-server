@@ -53,6 +53,25 @@ function findBackupsAndSizes(folderPath) {
     return subfolderInfo;
 }
 
+function sortBackupInfos(backupInfos) {
+    const nameOrder = {
+        "15min": 1,
+        "hourly": 2,
+        "daily": 3,
+        "weekly": 4
+    };
+    function compare(a, b) {
+        const [nameA, timestampA] = a.path.split('/');
+        const [nameB, timestampB] = b.path.split('/');
+        const nameComparison = nameOrder[nameA] - nameOrder[nameB];
+        if (nameComparison !== 0) {
+            return nameComparison;
+        }
+        return timestampB < timestampA ? -1 : 1
+    }
+    return backupInfos.sort(compare);
+}
+
 function getFolderSize(folderPath) {
     let totalSize = 0;
     const files = fs.readdirSync(folderPath);
@@ -105,8 +124,11 @@ app.use(express.static('public'));
 app.use(express.json());
 
 app.get('/backups', (req, res) => {
-    const backups = findBackupsAndSizes(argv.backupsFolder);
-    res.json(backups);
+    const backupInfos = 
+        sortBackupInfos(
+            findBackupsAndSizes(argv.backupsFolder)
+        )
+    res.json(backupInfos);
 });
 
 app.post('/rollback', (req, res) => {
