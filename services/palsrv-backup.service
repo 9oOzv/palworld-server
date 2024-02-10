@@ -1,0 +1,9 @@
+[Unit]
+Description=Palworld Dedicated Server Backup Service
+
+[Service]
+ExecStart=/srv/palworld/run.sh backup
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
