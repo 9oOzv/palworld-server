@@ -1,0 +1,21 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy
+        run: |
+          ssh-keyscan -p "$DEPLOY_PORT" -H $SERVER_IP >> ~/.ssh/known_hosts
+          ssh -i <( printf '%s' ${{ secrets.DEPLOY_KEY }} ) -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "cd ~/palsrv && git fetch && git reset --hard origin/master && ./run deploy"
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_IP: ${{ secrets.DEPLOY_IP }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
