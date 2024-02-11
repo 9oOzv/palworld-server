@@ -63,7 +63,7 @@ palsrv_steam_update() {
 
 palsrv_server() {
     printf 'Running PalServer...\n'
-    cd "$palsrv_steamapp_sh"
+    cd "$palsrv_steamapp_folder"
     "$palsrv_sh" --port 8211 --players 32 -useperfthreads -NoAsyncLoadingThread -UseMultithreadForDS
 }
 
