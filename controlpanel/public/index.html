@@ -21,7 +21,8 @@
         async function fetchOperations() {
             const operations = [
                 { name: "Restart server", f: restart },
-                { name: "Update server", f: update }
+                { name: "Update server", f: update },
+                { name: "DePrEsSo", f: depresso }
             ]
             const operationsList = document.getElementById('operations');
             const restartItem = document.createElement('li');
@@ -77,6 +78,15 @@
             });
             const message = await response.text();
             alert(message);
+        }
+
+        async function depresso() {
+            const directoriesList = document.getElementById('directories');
+            const body = document.getElementsByTagName("body")[0];
+            body.classList.add('depresso');
+            for(const ul of document.getElementsByClassName("content")) {
+                ul.classList.add('depresso2');
+            }
         }
 
 	fetchOperations();

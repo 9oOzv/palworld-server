@@ -3,12 +3,29 @@
   src: url('./font/hack.ttf');
 }
 
+@keyframes depresso {
+    0% { transform: rotate(0); }
+    25% { transform: rotate(10deg); }
+    50% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
+    100% { transform: rotate(0); }
+}
+
+@keyframes depresso2 {
+    0% { transform: rotate(20); }
+    25% { transform: rotate(-10deg); }
+    50% { transform: rotate(-20deg); }
+    75% { transform: rotate(10deg); }
+    100% { transform: rotate(20);}
+}
+
 html {
     background-image: url("./depresso.jpg");
-    background-size: 100vw;
+    background-size: cover;
     background-color: black;
     background-repeat: space;
-    background-attachment:fixed;
+    background-attachment: fixed;
+    background-position: center;
 }
 
 * {
@@ -54,4 +71,12 @@ div.content {
     min-width: 400px;
     margin: 128px;
     background-color: rgba(0,0,0,0.8);
+}
+
+.depresso {
+    animation: depresso 2s ease-in-out infinite;
+}
+
+.depresso2 {
+    animation: depresso2 1s ease-in-out infinite;
 }
