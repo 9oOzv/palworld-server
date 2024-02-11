@@ -3,44 +3,55 @@
   src: url('./font/hack.ttf');
 }
 
+html {
+    background-image: url("./depresso.jpg");
+    background-size: 100vw;
+    background-color: black;
+    background-repeat: space;
+    background-attachment:fixed;
+}
+
 * {
     font-family: 'Hack';
     font-size 14px;
     margin: 0;
     padding: 0;
-    background-color: black;
-    color: rgb(150,150,150);
+    color: rgb(200,200,255);
 }
 
 h1 {
-    color: rgb(255,0,100);
+    background-color: rgb(200,200,255);
     text-align: center;
-    margin-top: 20px;
-    font-size: 22px;
-    padding-top: 48px;
+    font-size: 26px;
+    padding: 10px 0 8px 0;
+    background-color: rgba(200,200,255,0.2);
 }
 
 ul {
     list-style-type: none;
-    padding: 0;
-    margin: 20px auto;
-    width: 800;
     background-color: black);
     border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-ul li {
-    padding: 10px 20px;
+li {
     cursor: pointer;
+    padding: 8px 0 6px 0;
     transition: background-color 0.3s;
     text-align: center;
 }
 
 li:hover {
-    background-color: #f0f0f0;
+    background-color: rgba(200,200,255,0.5);
+    color: rgb(0, 0, 0);
 }
 
 .number {
     color: rgb(0, 128, 255);
+}
+
+div.content {
+    width: 36vw;
+    min-width: 400px;
+    margin: 128px;
+    background-color: rgba(0,0,0,0.8);
 }
