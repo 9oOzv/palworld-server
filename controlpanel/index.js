@@ -87,17 +87,11 @@ function getFolderSize(folderPath) {
     return totalSize;
 }
 
-function rollback(backup) {
-    executeScript(`${argv.runSh} restore "${argv.backupsFolder}/${backup}/./"`);
-}
-
-function restart() {
-    executeScript(`${argv.runSh} restart`);
-}
-
-function update() {
-    executeScript(`${argv.runSh} update`);
-}
+function rollback(backup) { executeScript(`${argv.runSh} restore "${argv.backupsFolder}/${backup}/./"`); }
+function start() { executeScript(`${argv.runSh} start`); }
+function stop() { executeScript(`${argv.runSh} stop`); }
+function restart() { executeScript(`${argv.runSh} restart`); }
+function update() { executeScript(`${argv.runSh} udpate`); }
 
 function executeScript(command) {
     console.error(`Executing: ${command}`);
@@ -119,38 +113,68 @@ function validateBackupString(str) {
     return regex.test(str);
 }
 
+function backupActions() {
+    const backupInfos = sortBackupInfos(findBackupsAndSizes(argv.backupsFolder))
+    return backupInfos.map(info =>
+        ({
+            name: 'rollback',
+            html: `Rollback: ${info.path.split('\/')[1].padStart(24)} -- <span class="number">${(info.size / 1024 / 1024).toFixed(2).padStart(5,'0')}MB</span>`,
+            text: `Rollback to ${info.path.split('\/')[1]} (${(info.size / 1024 / 1024).toFixed(2).padStart(5,'0')}MB)`,
+            value: info.path
+        })
+    );
+}
+
+function rollback(value) {
+    if (!validateBackupString(value)) {
+        throw new Error(`Invalid backup string: ${value}`);
+    }
+}
+
 app.use(express.static('public'));
 
 app.use(express.json());
 
-app.get('/backups', (req, res) => {
-    const backupInfos = 
-        sortBackupInfos(
-            findBackupsAndSizes(argv.backupsFolder)
-        )
-    res.json(backupInfos);
+app.get('/actions', (req, res) => {
+
+    actions = [
+        { name: 'start', html: 'Start server', text: 'Start server' },
+        { name: 'stop', html: 'Stop server', text: 'stop server' },
+        { name: 'restart', html: 'Restart server', text: 'Restart server' },
+        { name: 'update', html: 'Update server', text: 'Update server' },
+        ...backupActions()
+    ]
+    res.json(actions);
 });
 
-app.post('/rollback', (req, res) => {
-    const backup = req.body.backup;
-    if (!validateBackupString(backup)) {
-        return res.status(400).send(`Invalid backup string: ${backup}`);
+app.post('/exec', (req, res) => {
+    const action = req.body;
+    console.log(`Executing action: ${JSON.stringify(action)}`)
+    switch (action.name) {
+        case "start":
+            start();
+            res.send('Start complete');
+            break;
+        case "stop":
+            stop();
+            res.send('Stop complete');
+            break;
+        case "restart":
+            restart();
+            res.send('Restart complete');
+            break;
+        case "update":
+            update();
+            res.send('Update complete');
+            break;
+        case "rollback":
+            rollback(action.value)
+            res.send('Rollback complete');
+            break;
+        default:
+            res.send(`Invalid action: ${JSON.stringify(action)}`);
+            break;
     }
-    if (!backup) {
-        return res.status(400).send('No folder selected');
-    }
-    rollback(backup);
-    res.send('Rollback complete');
-});
-
-app.post('/restart', (req, res) => {
-    restart();
-    res.send('Restart complete');
-});
-
-app.post('/update', (req, res) => {
-    update();
-    res.send('Update complete');
 });
 
 app.listen(argv.port, () => {
