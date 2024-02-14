@@ -18,7 +18,7 @@ jobs:
           ssh-keyscan -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
           printf '%s\n' "$DEPLOY_KEY" >/tmp/key
           chmod go= /tmp/key
-          ssh -v -i /tmp/key -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "cd ~/palsrv && git fetch && git reset --hard origin/master && ./run.sh deploy"
+          ssh -i /tmp/key -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "cd ~/palsrv && git fetch && git reset --hard origin/master && ./run.sh deploy"
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
