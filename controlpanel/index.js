@@ -87,24 +87,28 @@ function getFolderSize(folderPath) {
     return totalSize;
 }
 
-function rollback(backup) { executeScript(`${argv.runSh} restore "${argv.backupsFolder}/${backup}/./"`); }
-function start() { executeScript(`${argv.runSh} start`); }
-function stop() { executeScript(`${argv.runSh} stop`); }
-function restart() { executeScript(`${argv.runSh} restart`); }
-function update() { executeScript(`${argv.runSh} udpate`); }
+async function rollback(backup) { await executeScript(`${argv.runSh} restore "${argv.backupsFolder}/${backup}/./"`); }
+async function start() { await executeScript(`${argv.runSh} start`); }
+async function stop() { await executeScript(`${argv.runSh} stop`); }
+async function restart() { await executeScript(`${argv.runSh} restart`); }
+async function update() { await executeScript(`${argv.runSh} udpate`); }
 
 function executeScript(command) {
     console.error(`Executing: ${command}`);
-    exec(command, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error executing : ${error.message}`);
-            return;
-        }
-        if (stderr) {
-            console.error(`Exec stderr: ${stderr}`);
-            return;
-        }
-        console.log(stdout);
+    return new Promise((resolve, reject) => {
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error executing: ${error.message}`);
+                reject(error);
+                return;
+            }
+            if (stderr) {
+                console.error(`Exec stderr: ${stderr}`);
+                reject(new Error(stderr));
+                return;
+            }
+            resolve(stdout.trim());
+        });
     });
 }
 
@@ -125,12 +129,6 @@ function backupActions() {
     );
 }
 
-function rollback(value) {
-    if (!validateBackupString(value)) {
-        throw new Error(`Invalid backup string: ${value}`);
-    }
-}
-
 app.use(express.static('public'));
 
 app.use(express.json());
@@ -147,29 +145,34 @@ app.get('/actions', (req, res) => {
     res.json(actions);
 });
 
-app.post('/exec', (req, res) => {
+app.post('/exec', async (req, res, next) => {
     const action = req.body;
     console.log(`Executing action: ${JSON.stringify(action)}`)
     switch (action.name) {
         case "start":
-            start();
-            res.send('Start complete');
+            await start()
+                .then(v =>res.send('Start complete'))
+                .catch(err => next(err));
             break;
         case "stop":
-            stop();
-            res.send('Stop complete');
+            await stop()
+                .then(v =>res.send('Stop complete'))
+                .catch(err => next(err));
             break;
         case "restart":
-            restart();
-            res.send('Restart complete');
+            await restart()
+                .then(v =>res.send('Restart complete'))
+                .catch(err => next(err));
             break;
         case "update":
-            update();
-            res.send('Update complete');
+            await update()
+                .then(v =>res.send('Update complete'))
+                .catch(err => next(err));
             break;
         case "rollback":
-            rollback(action.value)
-            res.send('Rollback complete');
+            await rollback(action.value)
+                .then(v => res.send('Rollback complete'))
+                .catch(err => next(err));
             break;
         default:
             res.send(`Invalid action: ${JSON.stringify(action)}`);
