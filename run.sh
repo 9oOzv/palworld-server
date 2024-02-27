@@ -3,14 +3,17 @@
 set -euo pipefail
 
 palsrv_environment="${PALSRV_ENVIRONMENT:-'production'}"
-palsrv_steamapp_id="2394010"
-steamworks_sdk_steamapp_id="1007"
 
 palsrv_base_folder='/srv/palworld/palsrv'
+
+steamworks_sdk_steamapp_id="1007"
+steamworks_sdk_steamapp_folder="$palsrv_base_folder/steamapps/steamworks_sdk"
+
+palsrv_steamapp_id="2394010"
 run_sh="$palsrv_base_folder/run.sh"
 
 steamcmd_folder="$palsrv_base_folder/steam"
-palsrv_steamapp_folder="$steamcmd_folder/steamapps/common/PalServer"
+palsrv_steamapp_folder="$palsrv_base_folder/steamapps/palserver"
 palsrv_saved_folder="$palsrv_steamapp_folder/Pal/Saved"
 palsrv_controlpanel_folder="$palsrv_base_folder/controlpanel"
 
@@ -68,8 +71,13 @@ palsrv_steam_update() {
     printf 'Updating steam apps...\n'
     _do systemctl --user restart "$palsrv_service"
     _do cd "$steamcmd_folder"
-    _do "$steamcmd_sh" +login anonymous +app_update "$steamworks_sdk_steamapp_id" +quit
-    _do "$steamcmd_sh" +login anonymous +app_update "$palsrv_steamapp_id" +quit
+    _do "$steamcmd_sh" +force_install_dir "$steamworks_sdk_steamapp_folder" +login anonymous +app_update "$steamworks_sdk_steamapp_id" +quit
+    _do mkdir -p "$HOME/.steam/sdk64"
+    _do cp "$steamworks_sdk_steamapp_folder/linux64/steamclient.so" "$HOME/.steam/sdk64"
+    _do "$steamcmd_sh" +force_install_dir "$palsrv_steamapp_folder" +login anonymous +app_update "$palsrv_steamapp_id" +quit
+    if [ -d "$HOME/Steam" ]; then
+        _do rm -rf "$HOME/Steam"
+    fi
 }
 
 palsrv_server() {
